@@ -1,4 +1,4 @@
-import csv, os
+import csv, os, win32com.client
 
 # specify the name of the file that contains the source data
 filename = "sample.csv"
@@ -7,6 +7,8 @@ cwd = os.getcwd()
 
 # Generic subfolders that every entity gets
 generic_subfolders = [["credit", "cred1", "cred2"], ["collateral", "coll1", "coll2"]]
+
+shell = win32com.client.Dispatch("WScript.Shell")
 
 with open(filename, 'r') as f:
     reader = csv.reader(f)
@@ -27,7 +29,11 @@ with open(filename, 'r') as f:
         # check if the child directory is already in the root and make it if not
         if not os.path.exists(os.path.join(cwd,row[1])):
           os.mkdir(os.path.join(cwd,row[1]))
-          os.symlink(os.path.join(cwd,row[1]), os.path.join(cwd,cur_entity,row[1]))
+          # os.symlink(os.path.join(cwd,row[1]), os.path.join(cwd,cur_entity,row[1]))
+          target = os.path.join(cwd,row[1])
+          shortcut = shell.CreateShortcut(os.path.join(cwd,cur_entity,row[1]+".lnk"))
+          shortcut.Targetpath = target
+          shortcut.save()
           # add subfolders to new folder
           for subfolder in generic_subfolders:
             os.mkdir(os.path.join(cwd,row[1],subfolder[0]))
@@ -35,4 +41,8 @@ with open(filename, 'r') as f:
               os.mkdir(os.path.join(cwd,row[1],subfolder[0],sub))
         # check if the child directory is already linked in the current entity and make a link if not
         elif not os.path.exists(os.path.join(cwd,cur_entity,row[1])):
-          os.symlink(os.path.join(cwd,row[1]), os.path.join(cwd,cur_entity,row[1]))
+          target = os.path.join(cwd,row[1])
+          shortcut = shell.CreateShortcut(os.path.join(cwd,cur_entity,row[1]+".lnk"))
+          shortcut.Targetpath = target
+          shortcut.save()
+          # os.symlink(os.path.join(cwd,row[1]), os.path.join(cwd,cur_entity,row[1]))
